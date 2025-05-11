@@ -1,0 +1,204 @@
+syntax = "proto3";
+
+package pb;
+
+option go_package = "/pb";
+
+
+import "utils/validate/validate.proto";
+import "utils/google/empty.proto";
+
+service ChatService {
+     //write chat
+     rpc CreateChat(CreateChatRequest) returns (CreateChatResponse);
+     rpc DeleteChat (DeleteChatRequest) returns (StatusResponse);
+     rpc UpdateChat (UpdateChatRequest) returns (StatusResponse);
+
+     //write group & member
+     rpc CreateGroup (CreateGroupRequest) returns (StatusResponse);
+     rpc DeleteGroup (DeleteGroupRequest) returns (StatusResponse);
+     rpc UpdateGroup (UpdateGroupRequest) returns (StatusResponse);
+     rpc AddMember (AddMemberRequest) returns (StatusResponse);
+     rpc RemoveMember (RemoveMemberRequest) returns (StatusResponse);
+     rpc ExitGroup (ExitGroupRequest) returns (StatusResponse);
+     rpc UpdateRoleUser (UpdateRoleUserRequest) returns (StatusResponse);
+
+     //chat stream
+     rpc ChatStreaming (ChatStreamingRequest) returns (stream ChatStreamingResponse);
+
+     //chat stream for status user
+     rpc StatusStreaming(StatusStreamingRequest) returns (stream StatusStreamingResponse);
+
+     
+
+     // get group by user 
+     rpc GetListGroup(google.protobuf.Empty) returns (GetListGroupResponse);
+}
+
+//write chat
+message CreateChatRequest {
+     uint64 group_id = 1 [(validate.rules).uint64 = {
+          gt :0
+     }];
+     string message = 2 [(validate.rules).string = {
+          min_len:1
+     }];
+     repeated AnyUserStatus status = 3;
+
+}
+
+message AnyUserStatus {
+     uint64 member_id = 1;
+     string status = 2;
+}
+
+message CreateChatResponse{
+     string message = 1;
+}
+
+enum Action {
+     Create = 0;
+     Update = 1;
+     Delete = 2;
+}
+
+
+message DeleteChatRequest{
+     uint64 group_id = 1 [(validate.rules).uint64 = {
+          gt :0
+     }];
+     uint64 chat_id = 2 [(validate.rules).uint64 = {
+          gt :0
+     }];
+}
+
+message UpdateChatRequest{
+     uint64 group_id = 1 [(validate.rules).uint64 = {
+          gt :0
+     }];
+     uint64 chat_id = 2 [(validate.rules).uint64 = {
+          gt :0
+     }];
+     string message = 3 [(validate.rules).string = {
+          min_len:1
+     }];
+}
+
+
+
+
+//write group & member
+message CreateGroupRequest{
+     
+     string name = 1 [(validate.rules).string = {
+          min_len:1
+     }];
+     string desc = 2 [(validate.rules).string = {
+          min_len:1
+     }];
+
+}
+
+message DeleteGroupRequest{
+     uint64 group_id = 1 [(validate.rules).uint64 = {
+          gt:0
+     }];
+}
+
+message UpdateGroupRequest{
+     uint64 group_id = 1 [(validate.rules).uint64 = {
+          gt:0
+     }];
+     string name = 2 [(validate.rules).string = {
+          min_len:1
+     }];
+
+     string desc = 3 [(validate.rules).string = {
+          min_len:1
+     }];
+
+}
+
+message UpdateRoleUserRequest{
+     uint64 member_id = 1 [(validate.rules).uint64 = {
+          gt:0
+     }];
+      uint64 group_id = 2 [(validate.rules).uint64 = {
+          gt:0
+     }];
+     string role = 3 [(validate.rules).string = {
+          min_len:1
+     }];
+
+}
+
+message AddMemberRequest{
+     uint64 group_id = 1 [(validate.rules).uint64 = {
+          gt :0
+     }];
+     repeated ListUserId list_user_id = 2;
+}
+
+message RemoveMemberRequest{
+       uint64 group_id = 1 [(validate.rules).uint64 = {
+          gt :0
+     }];
+     repeated ListUserId list_member_id = 2;
+}
+
+message ListUserId{
+     uint64 user_id = 1 [(validate.rules).uint64 = {
+          gt :0
+     }];
+}
+message ExitGroupRequest{
+       uint64 group_id = 1 [(validate.rules).uint64 = {
+          gt :0
+     }];
+}
+message StatusResponse{
+     bool status = 1;
+}
+
+
+//chat stream
+message ChatStreamingRequest {
+     uint64 group_id = 1 [(validate.rules).uint64 = {
+          gt :0
+     }];
+}
+
+message ChatStreamingResponse {
+     uint64 member = 1;
+     string username = 2;
+     string message = 3;
+     string timestamp = 4;
+     Action action = 5;
+     repeated AnyUserStatus readStatus = 6;
+}
+
+//status user stream
+message StatusStreamingRequest {
+     uint64 group_id = 1  [(validate.rules).uint64 = { 
+          gt: 0 
+     }];
+}
+
+message StatusStreamingResponse {
+     uint64 member = 1;
+     string username = 2;
+     string status = 3;
+   
+}
+   
+// GetGroup by user   
+message GetListGroupResponse {
+     repeated GroupInfo group = 1;
+}
+
+message GroupInfo {
+     uint64 id = 1;
+     string name = 2;
+     string last_message = 3;
+}
+

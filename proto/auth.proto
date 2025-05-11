@@ -1,0 +1,48 @@
+syntax = "proto3";
+
+package pb;
+
+option go_package = "/pb";
+
+
+import "utils/validate/validate.proto";
+
+
+service Auth {
+     rpc Login (LoginRequest) returns (LoginResponse);
+     rpc Register (RegisterRequest) returns (RegisterResponse);
+}
+
+message LoginRequest {
+     string email = 1 [(validate.rules).string = {
+          email: true,
+          min_len:6
+     }];
+     string password = 2 [(validate.rules).string = {
+          min_len: 3
+     }];
+}
+
+message LoginResponse {
+     string token = 1;
+}
+
+message RegisterRequest {
+     string email = 1 [(validate.rules).string = {
+          email:true,
+          min_len: 6
+     }];
+
+     string password = 2 [(validate.rules).string = {
+          min_len:1
+     }];
+
+     string username = 3 [(validate.rules).string = {
+          ignore_empty:true
+     }];
+}
+
+message RegisterResponse {
+     string message = 1 ;
+}
+
